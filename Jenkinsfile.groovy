@@ -4,6 +4,9 @@ pipeline{
     tools {
         terraform 'terraform'
     }
+    parameters {
+        credentials credentialType: 'com.cloudbees.jenkins.plugins.awscredentials.AWSCredentialsImpl', defaultValue: 'AwsCredentials', name: 'aws-credentials', required: false
+    }
 
     stages{
         stage('GitHub Repo Checkout'){
