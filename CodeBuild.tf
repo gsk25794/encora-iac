@@ -78,6 +78,8 @@ resource "aws_iam_role_policy" "AWSCodebuildPolicy" {
         ]
     }
 }
+POLICY
+}
 
 resource "aws_codebuild_project" "Encora-Build" {
   name          = "Encora-Build"

@@ -22,6 +22,9 @@ data "aws_ami" "Tomcat" {
   }
 }
 
+data "aws_codestarconnections_connection" "Encora-Tomcat" {
+  arn = aws_codestarconnections_connection.Encora-Tomcat.arn
+}
 #################################################### Resources ####################################################
 
 # SNS #
@@ -38,7 +41,43 @@ resource "aws_sns_topic_subscription" "Encora-Notifications" {
 # S3 Artifact Bucket #
 resource "aws_s3_bucket" "Encora-Artifacts" {
   bucket = "Encora-Artifacts"
-  acl    = "private"
+}
+
+resource "aws_s3_bucket_policy" "Encora-Codepipeline-S3-Bucket-Policy" {
+  bucket = aws_s3_bucket.Encora-Artifacts.id
+
+  policy = <<EOF
+  {
+    "Version": "2012-10-17",
+    "Id": "SSEAndSSLPolicy",
+    "Statement": [
+        {
+            "Sid": "DenyUnEncryptedObjectUploads",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::Encora-Artifacts/*",
+            "Condition": {
+                "StringNotEquals": {
+                    "s3:x-amz-server-side-encryption": "aws:kms"
+                }
+            }
+        },
+        {
+            "Sid": "DenyInsecureConnections",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::Encora-Artifacts/*",
+            "Condition": {
+                "Bool": {
+                    "aws:SecureTransport": "false"
+                }
+            }
+        }
+    ]
+}
+EOF
 }
 
 

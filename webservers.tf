@@ -34,11 +34,66 @@ resource "aws_elb" "encora-alb" {
 
 }
 
+# Codedeploy Instance Role #
+
+resource "aws_iam_role" "CodeDeploy-EC2-Instance-Profile" {
+  name = "CodeDeploy-EC2-Instance-Profile"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "codedeploy.amazonaws.com",
+          "ec2.amazonaws.com"
+        ]
+      },
+      "Action": "sts:AssumeRole"
+    }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "CodeDeploy-EC2-Permissions" {
+  name = "CodeDeploy-EC2-Permissions"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:Get*",
+          "s3:List*"
+        ]
+        Effect   = "Allow"
+        Resource = [
+          "arn:aws:s3:::Encora-Artifacts/*",
+          "arn:aws:s3:::aws-codedeploy-us-east-1/*"
+        ]
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "CodeDeploy-EC2-PolicyAttach" {
+  role       = aws_iam_role.CodeDeploy-EC2-Instance-Profile.name
+  policy_arn = aws_iam_policy.CodeDeploy-EC2-Permissions.arn
+}
+
 # EC2 Autoscaling #
 resource "aws_launch_configuration" "encora-config" {
   name          = "encora_config"
   image_id      = data.aws_ami.Tomcat.id
   instance_type = "t2.micro"
+  iam_instance_profile = "CodeDeploy-EC2-Instance-Profile"
+  user_data = <<-EOF
+              #!/bin/bash
+              sudo yum update -y
+              sudo service codedeploy-agent restart
+              /usr/java/apache-tomcat-8.5.69/bin/startup.sh
+              EOF
 }
 
 resource "aws_autoscaling_group" "encora-asg" {

@@ -13,7 +13,7 @@ resource "aws_vpc" "encora-vpc" {
 
 resource "aws_subnet" "encora-subnet-1" {
   vpc_id     = aws_vpc.encora-vpc.id
-  cidr_block = "10.0.1.0/24"
+  cidr_block = "172.31.0.0/24"
 
   tags = {
     Name = "encora-subnet-1"
@@ -22,7 +22,7 @@ resource "aws_subnet" "encora-subnet-1" {
 
 resource "aws_subnet" "encora-subnet-2" {
   vpc_id     = aws_vpc.encora-vpc.id
-  cidr_block = "10.0.2.0/24"
+  cidr_block = "172.31.1.0/24"
 
   tags = {
     Name = "encora-subnet-2"
@@ -42,13 +42,18 @@ resource "aws_route_table" "encora-rtb" {
   route = [
     {
       cidr_block = "10.0.1.0/24"
-      gateway_id = aws_internet_gateway.example.id
+      gateway_id = aws_internet_gateway.encora-igw.id
     },
   ]
 
 }
 resource "aws_route_table_association" "encora-rtb-a" {
   subnet_id      = aws_subnet.encora-subnet-1.id
+  route_table_id = aws_route_table.encora-rtb.id
+}
+
+resource "aws_route_table_association" "encora-rtb-b" {
+  subnet_id      = aws_subnet.encora-subnet-2.id
   route_table_id = aws_route_table.encora-rtb.id
 }
 

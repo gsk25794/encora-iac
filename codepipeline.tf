@@ -26,7 +26,7 @@ resource "aws_codepipeline" "encora-codepipeline" {
       output_artifacts = ["source_output"]
 
       configuration = {
-        ConnectionArn    = aws_codestarconnections_connection.GitHub.arn
+        ConnectionArn    = aws_codestarconnections_connection.Encora-Tomcat.arn
         FullRepositoryId = "https://github.com/gsk25794/encora.git"
         BranchName       = "master"
       }
