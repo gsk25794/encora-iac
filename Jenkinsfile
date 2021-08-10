@@ -19,11 +19,6 @@ pipeline{
                 sh 'terraform init'
             }
         }
-        stage('Terraform Plan'){
-            steps{
-                sh 'terraform init'
-            }
-        }
         stage('Terraform Format'){
             steps{
                 sh 'terraform fmt'
